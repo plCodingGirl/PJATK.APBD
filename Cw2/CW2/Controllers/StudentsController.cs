@@ -1,4 +1,5 @@
 ﻿using System;
+using CW2.DAL;
 using CW2.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,12 +9,17 @@ namespace CW2.Controllers
     [Route("api/students")]
     public class StudentsController : ControllerBase
     {
-        //httpget, httppost, httpput, httppatch -> załaduj (częściowa aktualizacja), httpdelete
+        private readonly IDbService _dbService;
+        
+        public StudentsController(IDbService dbService)
+        {
+            _dbService = dbService;
+        }
 
         [HttpGet]
-        public IActionResult GetStudents([FromQuery] string orderBy)
+        public IActionResult GetStudents(string orderBy)
         {
-            return Ok($"Kowalska, Nowak {orderBy}");
+            return Ok(_dbService.GetStudents());
         }
 
         [HttpPost]
