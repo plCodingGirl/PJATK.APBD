@@ -46,11 +46,12 @@ namespace CW2.DAL
             using (var cmd = new SqlCommand())
             {
                 cmd.Connection = client;
-                cmd.CommandText = @$"SELECT FirstName, LastName, BirthDate, e.Semester, s.Name
+                cmd.CommandText = @"SELECT FirstName, LastName, BirthDate, e.Semester, s.Name
                   FROM Student AS student
                   JOIN Enrollment AS e ON student.IdEnrollment = e.IdEnrollment
                   JOIN Studies AS s ON e.IdStudy = s.IdStudy
-                  WHERE IndexNumber = '{id}'";
+                  WHERE IndexNumber = @id";
+                cmd.Parameters.AddWithValue("id", id);
 
                 client.Open();
                 var reader = cmd.ExecuteReader();
