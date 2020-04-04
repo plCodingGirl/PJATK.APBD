@@ -30,7 +30,7 @@ namespace CW2.Controllers
         }
 
         [HttpGet("{id}")]
-        public IActionResult GetStudentById([FromRoute] int id)
+        public IActionResult GetStudentById([FromRoute] string id)
         {
             var student = _dbService.GetStudentById(id);
             if (student != null)

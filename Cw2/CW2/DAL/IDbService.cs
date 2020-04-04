@@ -9,6 +9,6 @@ namespace CW2.DAL
     public interface IDbService
     {
         public IEnumerable<Student> GetStudents();
-        public Student GetStudentById(int id);
+        public Student GetStudentById(string id);
     }
 }

@@ -25,7 +25,7 @@ namespace CW2.DAL
             return _students;
         }
 
-        public Student GetStudentById(int id)
+        public Student GetStudentById(string id)
         {
             throw new NotImplementedException();
         }

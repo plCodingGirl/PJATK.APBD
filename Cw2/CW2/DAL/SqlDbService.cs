@@ -39,7 +39,7 @@ namespace CW2.DAL
             }
         }
 
-        public Student GetStudentById(int id)
+        public Student GetStudentById(string id)
         {
             using (var client = new SqlConnection(
                 "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
@@ -50,7 +50,7 @@ namespace CW2.DAL
                   FROM Student AS student
                   JOIN Enrollment AS e ON student.IdEnrollment = e.IdEnrollment
                   JOIN Studies AS s ON e.IdStudy = s.IdStudy
-                  WHERE IndexNumber = {id}";
+                  WHERE IndexNumber = '{id}'";
 
                 client.Open();
                 var reader = cmd.ExecuteReader();
