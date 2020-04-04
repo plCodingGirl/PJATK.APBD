@@ -32,18 +32,13 @@ namespace CW2.Controllers
         [HttpGet("{id}")]
         public IActionResult GetStudentById([FromRoute] int id)
         {
-            if (id == 1)
+            var student = _dbService.GetStudentById(id);
+            if (student != null)
             {
-                return Ok("Kowalska");
+                return Ok(student);
             }
-            else if (id == 2)
-            {
-                return Ok("Nowak");
-            }
-            else
-            {
-                return NotFound($"Nie znaleziono studenta o id {id}");
-            }
+
+            return NotFound($"Nie znaleziono studenta o id {id}");
         }
 
         [HttpPut("{id}")]
