@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.SqlClient;
 using CW2.Models;
 
@@ -44,7 +45,7 @@ namespace CW2.DAL
             using (var cmd = new SqlCommand())
             {
                 cmd.Connection = client;
-                cmd.CommandText = @"SELECT FirstName, LastName, BirthDate, e.Semester, s.Name
+                cmd.CommandText = @"SELECT IndexNumber, FirstName, LastName, BirthDate, e.Semester, s.Name
                   FROM Student AS student
                   JOIN Enrollment AS e ON student.IdEnrollment = e.IdEnrollment
                   JOIN Studies AS s ON e.IdStudy = s.IdStudy
@@ -57,6 +58,7 @@ namespace CW2.DAL
                 while (reader.Read())
                 {
                     var student = new Student();
+                    student.IndexNumber = reader["IndexNumber"].ToString();
                     student.FirstName = reader["FirstName"].ToString();
                     student.LastName = reader["LastName"].ToString();
                     student.BirthDate = Convert.ToDateTime(reader["BirthDate"]);
@@ -96,7 +98,7 @@ namespace CW2.DAL
             }
         }
 
-        public Enrollment GetLatestFirstSemester(int idStudy)
+        public Enrollment GetLatestEnrollment(int semester, int idStudy)
         {
             using (var client = new SqlConnection(
                 "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
@@ -105,9 +107,10 @@ namespace CW2.DAL
                 cmd.Connection = client;
                 cmd.CommandText = @"SELECT TOP 1 IdEnrollment, Semester, IdStudy, StartDate
                 FROM ENROLLMENT
-                WHERE IdStudy= @idStudy AND Semester = 1
+                WHERE IdStudy= @idStudy AND Semester = @semester
                 ORDER BY StartDate DESC";
                 cmd.Parameters.AddWithValue("idStudy", idStudy);
+                cmd.Parameters.AddWithValue("semester", semester);
 
                 client.Open();
                 var reader = cmd.ExecuteReader();
@@ -170,6 +173,34 @@ namespace CW2.DAL
                         throw;
                     }
                 }
+            }
+        }
+
+        public Enrollment PromoteStudents(PromoteStudentsDTO promoteStudentsDto)
+        {
+            using (var client = new SqlConnection(
+                "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
+            using (var cmd = new SqlCommand("spPromoteStudents"))
+            {
+                cmd.Connection = client;
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.Parameters.AddWithValue("studies", promoteStudentsDto.Studies);
+                cmd.Parameters.AddWithValue("semester", promoteStudentsDto.Semester);
+
+                client.Open();
+                var reader = cmd.ExecuteReader();
+                
+                while (reader.Read())
+                {
+                    var enrollment = new Enrollment();
+                    enrollment.IdEnrollment = Convert.ToInt32(reader["IdEnrollment"]);
+                    enrollment.Semester = Convert.ToInt32(reader["Semester"]);
+                    enrollment.IdStudy = Convert.ToInt32(reader["IdStudy"]);
+                    enrollment.StartDate = Convert.ToDateTime(reader["StartDate"]);
+                    return enrollment;
+                }
+
+                return null;
             }
         }
 

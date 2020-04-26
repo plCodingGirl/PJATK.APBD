@@ -8,8 +8,9 @@ namespace CW2.DAL
         public IEnumerable<Student> GetStudents();
         public Student GetStudentByIndexNumber(string indexNumber);
         public Studies GetStudiesByName(string name);
-        public Enrollment GetLatestFirstSemester(int idStudy);
+        public Enrollment GetLatestEnrollment(int semester, int idStudy);
         public void AddStudentWithExistingEnrollment(CreateStudentDTO student, int existingIdEnrollment);
         public Enrollment AddStudentWithNewEnrollment(CreateStudentDTO student, Enrollment enrollment);
+        public Enrollment PromoteStudents(PromoteStudentsDTO promoteStudentsDto);
     }
 }

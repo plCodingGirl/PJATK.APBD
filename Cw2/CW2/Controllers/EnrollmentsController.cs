@@ -26,13 +26,15 @@ namespace CW2.Controllers
 
             if (studies == null)
             {
-                return BadRequest($"Nie znaleziono takiego kierunku studiow {student.Studies}");
+                return BadRequest($"Nie znaleziono kierunku studiow {student.Studies}");
             }
-            var enrollment = _dbService.GetLatestFirstSemester(studies.IdStudy);
+
             if (_dbService.GetStudentByIndexNumber(student.IndexNumber) != null)
             {
                 return BadRequest($"Istnieje juz student z numerem indeksu {student.IndexNumber}");
             }
+
+            var enrollment = _dbService.GetLatestEnrollment(1, studies.IdStudy);
             if (enrollment == null)
             {
                 enrollment =  _dbService.AddStudentWithNewEnrollment(student, new Enrollment(){IdStudy = studies.IdStudy, Semester = 1, StartDate = DateTime.Now});
@@ -42,6 +44,26 @@ namespace CW2.Controllers
                 _dbService.AddStudentWithExistingEnrollment(student, enrollment.IdEnrollment);
             }
            
+            return Created("", enrollment);
+        }
+
+        [HttpPost("promotions")]
+        public IActionResult PromoteStudents(PromoteStudentsDTO promoteStudents)
+        {
+            var studies = _dbService.GetStudiesByName(promoteStudents.Studies);
+
+            if (studies == null)
+            {
+                return NotFound($"Nie znaleziono kierunku studiow {promoteStudents.Studies}");
+            }
+
+            if (_dbService.GetLatestEnrollment(promoteStudents.Semester, studies.IdStudy) == null)
+            {
+                return NotFound($"Nie znaleziono semestru {promoteStudents.Semester}");
+            }
+
+            var enrollment = _dbService.PromoteStudents(promoteStudents);
+            
             return Created("", enrollment);
         }
     }
