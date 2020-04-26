@@ -1,14 +1,15 @@
 ﻿using CW2.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CW2.DAL
 {
     public interface IDbService
     {
         public IEnumerable<Student> GetStudents();
-        public Student GetStudentById(string id);
+        public Student GetStudentByIndexNumber(string indexNumber);
+        public Studies GetStudiesByName(string name);
+        public Enrollment GetLatestFirstSemester(int idStudy);
+        public void AddStudentWithExistingEnrollment(CreateStudentDTO student, int existingIdEnrollment);
+        public Enrollment AddStudentWithNewEnrollment(CreateStudentDTO student, Enrollment enrollment);
     }
 }
