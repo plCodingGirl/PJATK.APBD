@@ -1,3 +1,4 @@
+using System.Net;
 using CW2.DAL;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +35,20 @@ namespace CW2
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.Use(async (context, next) =>
+            {
+                var dbService = context.RequestServices.GetService<IDbService>();
+                if (!context.Request.Headers.TryGetValue("Index", out var indexValue)
+                    || string.IsNullOrWhiteSpace(indexValue)
+                    || dbService.GetStudentByIndexNumber(indexValue) == null)
+                {
+                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                    return;
+                }
+
+                await next();
+            });
 
             app.UseEndpoints(endpoints =>
             {
