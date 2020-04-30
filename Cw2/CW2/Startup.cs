@@ -1,5 +1,6 @@
 using System.Net;
 using CW2.DAL;
+using CW2.Middlewares;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,6 +32,8 @@ namespace CW2
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseMiddleware<LoggingMiddleware>();
 
             app.UseRouting();
 
