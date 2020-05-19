@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace LinqConsoleApp
@@ -179,10 +180,6 @@ namespace LinqConsoleApp
             Celem ćwiczenia jest uzupełnienie poniższych metod.
          *  Każda metoda powinna zawierać kod C#, który z pomocą LINQ'a będzie realizować
          *  zapytania opisane za pomocą SQL'a.
-         *  Rezultat zapytania powinien zostać wyświetlony za pomocą kontrolki DataGrid.
-         *  W tym celu końcowy wynik należy rzutować do Listy (metoda ToList()).
-         *  Jeśli dane zapytanie zwraca pojedynczy wynik możemy je wyświetlić w kontrolce
-         *  TextBox WynikTextBox.
         */
 
         /// <summary>
@@ -207,6 +204,11 @@ namespace LinqConsoleApp
 
 
             //2. Lambda and Extension methods
+            var res2 = Emps.Where(x => x.Job == "Backend programmer").Select(x => new
+            {
+                Nazwisko = x.Ename,
+                Zawod = x.Job
+            });
         }
 
         /// <summary>
@@ -214,8 +216,16 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad2()
         {
-            
+            //1. Query syntax (SQL)
+            var res = from emp in Emps
+                where (emp.Job == "Frontend programmer" && emp.Salary > 1000)
+                orderby emp.Ename descending
+                select emp;
 
+            //2. Lambda and Extension methods
+            var res2 = Emps
+                .Where(x => x.Job == "Frontend programmer" && x.Salary > 1000)
+                .OrderByDescending(x => x.Ename);
         }
 
         /// <summary>
@@ -223,7 +233,12 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad3()
         {
-          
+            //1. Query syntax (SQL)
+            var res = (from emp in Emps
+                select emp.Salary).Max();
+
+            //2. Lambda and Extension methods
+            var res2 = Emps.Max(x => x.Salary);
         }
 
         /// <summary>
@@ -231,7 +246,14 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad4()
         {
+            //1. Query syntax (SQL)
+            var res = (from emp in Emps
+                where (emp.Salary == (from a in Emps
+                    select a.Salary).Max())
+                       select emp);
 
+            //2. Lambda and Extension methods
+            var res2 = Emps.Where(x=>x.Salary == Emps.Max(y => y.Salary));
         }
 
         /// <summary>
@@ -239,7 +261,21 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad5()
         {
+            //1. Query syntax (SQL)
+            var res = from emp in Emps
+                select new
+                {
+                    Nazwisko = emp.Ename,
+                    Praca = emp.Job
+                };
 
+
+            //2. Lambda and Extension methods
+            var res2 = Emps.Select(x => new
+            {
+                Nazwisko = x.Ename,
+                Praca = x.Job
+            });
         }
 
         /// <summary>
@@ -249,7 +285,11 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad6()
         {
-
+            //2. Lambda and Extension methods
+            var res2 = Emps.Join(Depts, emp => emp.Deptno, dept => dept.Deptno, (emp, dept) => new
+            {
+                emp.Ename, emp.Job, dept.Dname
+            });
         }
 
         /// <summary>
@@ -257,7 +297,12 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad7()
         {
-
+            //2. Lambda and Extension methods
+            var res2 = Emps.GroupBy(x => x.Job).Select(x => new
+            {
+                Praca = x.Key,
+                LiczbaPracownikow = x.Count()
+            });
         }
 
         /// <summary>
@@ -266,7 +311,8 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad8()
         {
-
+            //2. Lambda and Extension methods
+            var res2 = Emps.Any(x => x.Job == "Backend programmer");
         }
 
         /// <summary>
@@ -275,7 +321,8 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad9()
         {
-
+            //2. Lambda and Extension methods
+            var res2 = Emps.Where(x => x.Job == "Frontend programmer").OrderByDescending(x => x.HireDate).FirstOrDefault();
         }
 
         /// <summary>
@@ -285,20 +332,36 @@ namespace LinqConsoleApp
         /// </summary>
         public void Przyklad10Button_Click()
         {
-
+            //2. Lambda and Extension methods
+            var res2 = Emps.Union(new []
+            {
+                new Emp()
+                {
+                    Ename = "Brak wartosci",
+                    Job = null,
+                    HireDate = null
+                }
+            }).Select(x => new
+            {
+                x.Ename, x.Job, x.HireDate
+            });
         }
 
         //Znajdź pracownika z najwyższą pensją wykorzystując metodę Aggregate()
         public void Przyklad11()
         {
-
+            var res2 = Emps.Aggregate((x, y) => x.Salary > y.Salary ? x : y);
         }
 
         //Z pomocą języka LINQ i metody SelectMany wykonaj złączenie
         //typu CROSS JOIN
         public void Przyklad12()
         {
-
+            var res2 = Emps.SelectMany(x => Depts.Select(y => new
+            {
+                emp = x,
+                dept = y
+            }));
         }
     }
 }
