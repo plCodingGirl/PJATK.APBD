@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using CW2.DAL;
 using CW2.Models;
+using CW2.Security;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -27,8 +28,9 @@ namespace CW2.Controllers
         [HttpPost("login")]
         public IActionResult Login(LoginRequestDto request)
         {
-            var authenticatedStudent = _dbService.AuthenticateStudent(request.Login, request.Password);
-            if (authenticatedStudent == null)
+            var authenticatedStudent = _dbService.GetUserInfo(request.Login);
+            if (authenticatedStudent == null 
+                || !PasswordHelper.CheckPassword(authenticatedStudent.PasswordHash, authenticatedStudent.PasswordSalt, request.Password))
             {
                 return BadRequest("Wrong login or password");
             }

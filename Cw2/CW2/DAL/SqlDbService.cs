@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using CW2.Models;
+using CW2.Security;
 
 namespace CW2.DAL
 {
@@ -204,18 +205,17 @@ namespace CW2.DAL
             }
         }
 
-        public UserInfo AuthenticateStudent(string login, string password)
+        public UserInfo GetUserInfo(string login)
         {
             using (var client = new SqlConnection(
                 "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
             using (var cmd = new SqlCommand())
             {
                 cmd.Connection = client;
-                cmd.CommandText = @"SELECT IndexNumber, FirstName, LastName
+                cmd.CommandText = @"SELECT IndexNumber, FirstName, LastName, Password AS PasswordHash, PasswordSalt
                   FROM Student AS student
-                  WHERE IndexNumber = @login AND Password = @password";
+                  WHERE IndexNumber = @login";
                 cmd.Parameters.AddWithValue("login", login);
-                cmd.Parameters.AddWithValue("password", password);
 
                 client.Open();
                 var reader = cmd.ExecuteReader();
@@ -226,6 +226,8 @@ namespace CW2.DAL
                     userInfo.IndexNumber = reader["IndexNumber"].ToString();
                     userInfo.FirstName = reader["FirstName"].ToString();
                     userInfo.LastName = reader["LastName"].ToString();
+                    userInfo.PasswordHash = reader["PasswordHash"].ToString();
+                    userInfo.PasswordSalt = reader["PasswordSalt"].ToString();
                     return userInfo;
                 }
 
@@ -315,6 +317,8 @@ namespace CW2.DAL
         {
             using (var cmd = new SqlCommand())
             {
+                var password = PasswordHelper.HashPassword(student.Password);
+
                 cmd.Connection = client;
                 cmd.Transaction = transaction;
                 cmd.CommandText = @"INSERT INTO [Student]
@@ -323,20 +327,23 @@ namespace CW2.DAL
                        ,[LastName]
                        ,[BirthDate]
                        ,[IdEnrollment]
-                       ,[Password])
+                       ,[Password]
+                       ,[PasswordSalt])
                  VALUES
                        (@indexNumber
                        ,@firstName
                        ,@lastName
                        ,@birthDate
                        ,@enrollment
-                       ,@password)";
+                       ,@password
+                       ,@passwordSalt)";
                 cmd.Parameters.AddWithValue("indexNumber", student.IndexNumber);
                 cmd.Parameters.AddWithValue("firstName", student.FirstName);
                 cmd.Parameters.AddWithValue("lastName", student.LastName);
                 cmd.Parameters.AddWithValue("birthDate", student.BirthDate);
                 cmd.Parameters.AddWithValue("enrollment", idEnrollment);
-                cmd.Parameters.AddWithValue("password", student.Password);
+                cmd.Parameters.AddWithValue("password", password.PasswordHash);
+                cmd.Parameters.AddWithValue("passwordSalt", password.Salt);
 
                 cmd.ExecuteNonQuery();
             }
