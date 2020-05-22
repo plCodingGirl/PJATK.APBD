@@ -4,12 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using CW2.DAL;
 using CW2.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CW2.Controllers
 {
     [Route("api/enrollments")]
+    [Authorize(Roles = Roles.Employee)]
     [ApiController]
     public class EnrollmentsController : ControllerBase
     {
@@ -19,6 +21,7 @@ namespace CW2.Controllers
         {
             _dbService = dbService;
         }
+
         [HttpPost]
         public IActionResult CreateStudent(CreateStudentDTO student)
         {
