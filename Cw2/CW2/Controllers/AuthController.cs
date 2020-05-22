@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Tasks;
+using CW2.DAL;
 using CW2.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -18,28 +16,30 @@ namespace CW2.Controllers
     public class AuthController : ControllerBase
     {
         private readonly IConfiguration _configuration;
+        private readonly IDbService _dbService;
 
-        public AuthController(IConfiguration configuration) 
+        public AuthController(IConfiguration configuration, IDbService dbService)
         {
             _configuration = configuration;
+            _dbService = dbService;
         }
 
         [HttpPost("login")]
         public IActionResult Login(LoginRequestDto request)
         {
-            var claims = new List<Claim>()
-{
-                new Claim(ClaimTypes.NameIdentifier, "1"),
-                new Claim(ClaimTypes.Name, request.Login),
-                new Claim(ClaimTypes.Role, "admin"),
-                new Claim(ClaimTypes.Role, "student")
-            };
-
-            if (request.Login == "admin")
+            var authenticatedStudent = _dbService.AuthenticateStudent(request.Login, request.Password);
+            if (authenticatedStudent == null)
             {
-                claims.Add(new Claim(ClaimTypes.Role, Roles.Employee));
+                return BadRequest("Wrong login or password");
             }
 
+            var claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.NameIdentifier, authenticatedStudent.IndexNumber),
+                new Claim(ClaimTypes.Name, $"{authenticatedStudent.FirstName} {authenticatedStudent.LastName}"),
+                new Claim(ClaimTypes.Role, Roles.Employee)
+            };
+            
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["SecretKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -55,7 +55,7 @@ namespace CW2.Controllers
             return Ok(new
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
-                refreshToken=Guid.NewGuid()
+                refreshToken = Guid.NewGuid()
             });
         }
     }

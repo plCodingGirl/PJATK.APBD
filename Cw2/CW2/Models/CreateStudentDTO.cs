@@ -18,6 +18,7 @@ namespace CW2.Models
         public DateTime BirthDate { get; set; }
         [Required]
         public string Studies { get; set; }
-
+        [Required] 
+        public string Password { get; set; }
     }
 }

@@ -204,6 +204,35 @@ namespace CW2.DAL
             }
         }
 
+        public UserInfo AuthenticateStudent(string login, string password)
+        {
+            using (var client = new SqlConnection(
+                "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
+            using (var cmd = new SqlCommand())
+            {
+                cmd.Connection = client;
+                cmd.CommandText = @"SELECT IndexNumber, FirstName, LastName
+                  FROM Student AS student
+                  WHERE IndexNumber = @login AND Password = @password";
+                cmd.Parameters.AddWithValue("login", login);
+                cmd.Parameters.AddWithValue("password", password);
+
+                client.Open();
+                var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var userInfo = new UserInfo();
+                    userInfo.IndexNumber = reader["IndexNumber"].ToString();
+                    userInfo.FirstName = reader["FirstName"].ToString();
+                    userInfo.LastName = reader["LastName"].ToString();
+                    return userInfo;
+                }
+
+                return null;
+            }
+        }
+
         private Enrollment AddEnrollment(SqlConnection client, SqlTransaction transaction, Enrollment enrollment)
         {
             using (var cmd = new SqlCommand())
@@ -244,18 +273,21 @@ namespace CW2.DAL
                        ,[FirstName]
                        ,[LastName]
                        ,[BirthDate]
-                       ,[IdEnrollment])
+                       ,[IdEnrollment]
+                       ,[Password])
                  VALUES
                        (@indexNumber
                        ,@firstName
                        ,@lastName
                        ,@birthDate
-                       ,@enrollment)";
+                       ,@enrollment
+                       ,@password)";
                 cmd.Parameters.AddWithValue("indexNumber", student.IndexNumber);
                 cmd.Parameters.AddWithValue("firstName", student.FirstName);
                 cmd.Parameters.AddWithValue("lastName", student.LastName);
                 cmd.Parameters.AddWithValue("birthDate", student.BirthDate);
                 cmd.Parameters.AddWithValue("enrollment", idEnrollment);
+                cmd.Parameters.AddWithValue("password", student.Password);
 
                 cmd.ExecuteNonQuery();
             }
