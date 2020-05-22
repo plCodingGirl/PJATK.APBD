@@ -233,6 +233,55 @@ namespace CW2.DAL
             }
         }
 
+        public void SaveRefreshToken(string login, string refreshToken)
+        {
+            using (var client = new SqlConnection(
+                "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
+            using (var cmd = new SqlCommand())
+            {
+                cmd.Connection = client;
+                cmd.CommandText = @"INSERT INTO [RefreshToken]
+                ([RefreshToken], [UserId])
+                VALUES (@refreshToken, @login)";
+                cmd.Parameters.AddWithValue("refreshToken", refreshToken);
+                cmd.Parameters.AddWithValue("login", login);
+
+                client.Open();
+                cmd.ExecuteNonQuery();
+            }
+        }
+
+        public UserInfo UseRefreshToken(string refreshToken)
+        {
+            using (var client = new SqlConnection(
+                "Data Source=db-mssql;Initial Catalog=s17428;Integrated Security=True"))
+            using (var cmd = new SqlCommand())
+            {
+                cmd.Connection = client;
+                cmd.CommandText = @"SELECT IndexNumber, FirstName, LastName
+                  FROM Student AS student
+                  JOIN RefreshToken rt ON student.IndexNumber = rt.UserId
+                  WHERE rt.RefreshToken = @refreshToken
+                    
+                  DELETE FROM RefreshToken WHERE RefreshToken = @refreshToken";
+                cmd.Parameters.AddWithValue("refreshToken", refreshToken);
+
+                client.Open();
+                var reader = cmd.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var userInfo = new UserInfo();
+                    userInfo.IndexNumber = reader["IndexNumber"].ToString();
+                    userInfo.FirstName = reader["FirstName"].ToString();
+                    userInfo.LastName = reader["LastName"].ToString();
+                    return userInfo;
+                }
+
+                return null;
+            }
+        }
+
         private Enrollment AddEnrollment(SqlConnection client, SqlTransaction transaction, Enrollment enrollment)
         {
             using (var cmd = new SqlCommand())

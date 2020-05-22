@@ -33,13 +33,38 @@ namespace CW2.Controllers
                 return BadRequest("Wrong login or password");
             }
 
+            var refreshToken = Guid.NewGuid().ToString();
+            
+            _dbService.SaveRefreshToken(authenticatedStudent.IndexNumber, refreshToken);
+
+            return CreateTokenResponse(authenticatedStudent, refreshToken);
+        }
+
+        [HttpPost("refresh")]
+        public IActionResult Refresh(RefreshRequestDTO refresh)
+        {
+            var authenticatedStudent = _dbService.UseRefreshToken(refresh.RefreshToken);
+            if (authenticatedStudent == null)
+            {
+                return BadRequest("Wrong refresh token");
+            }
+
+            var refreshToken = Guid.NewGuid().ToString();
+
+            _dbService.SaveRefreshToken(authenticatedStudent.IndexNumber, refreshToken);
+
+            return CreateTokenResponse(authenticatedStudent, refreshToken);
+        }
+
+        private IActionResult CreateTokenResponse(UserInfo authenticatedStudent, string refreshToken)
+        {
             var claims = new List<Claim>()
             {
                 new Claim(ClaimTypes.NameIdentifier, authenticatedStudent.IndexNumber),
                 new Claim(ClaimTypes.Name, $"{authenticatedStudent.FirstName} {authenticatedStudent.LastName}"),
                 new Claim(ClaimTypes.Role, Roles.Employee)
             };
-            
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["SecretKey"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
@@ -55,7 +80,7 @@ namespace CW2.Controllers
             return Ok(new
             {
                 token = new JwtSecurityTokenHandler().WriteToken(token),
-                refreshToken = Guid.NewGuid()
+                refreshToken = refreshToken
             });
         }
     }

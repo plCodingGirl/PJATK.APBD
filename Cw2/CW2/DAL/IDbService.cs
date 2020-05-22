@@ -13,5 +13,7 @@ namespace CW2.DAL
         public Enrollment AddStudentWithNewEnrollment(CreateStudentDTO student, Enrollment enrollment);
         public Enrollment PromoteStudents(PromoteStudentsDTO promoteStudentsDto);
         public UserInfo AuthenticateStudent(string login, string password);
+        public void SaveRefreshToken(string login, string refreshToken);
+        public UserInfo UseRefreshToken(string refreshToken);
     }
 }
