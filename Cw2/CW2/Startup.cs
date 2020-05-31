@@ -56,7 +56,7 @@ namespace CW2
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseMiddleware<LoggingMiddleware>();
+            //app.UseMiddleware<LoggingMiddleware>();
 
             app.UseRouting();
 

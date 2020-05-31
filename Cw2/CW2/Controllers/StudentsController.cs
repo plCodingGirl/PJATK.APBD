@@ -1,7 +1,11 @@
 ﻿using System;
+using System.Linq;
 using CW2.DAL;
 using CW2.Models;
+using CW2.ModelsEf;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Student = CW2.Models.Student;
 
 namespace CW2.Controllers
 {
@@ -10,16 +14,20 @@ namespace CW2.Controllers
     public class StudentsController : ControllerBase
     {
         private readonly IDbService _dbService;
-        
-        public StudentsController(IDbService dbService)
+        private readonly StudentsDbContext _studentsDbContext;
+
+        public StudentsController(IDbService dbService, StudentsDbContext studentsDbContext)
         {
+            _studentsDbContext = studentsDbContext;
             _dbService = dbService;
         }
 
         [HttpGet]
-        public IActionResult GetStudents(string orderBy)
+        public IActionResult GetStudents()
         {
-            return Ok(_dbService.GetStudents());
+            var students =
+                _studentsDbContext.Student.ToList();
+            return Ok(students);
         }
 
         [HttpPost]
@@ -42,16 +50,39 @@ namespace CW2.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateStudent(Student student, [FromRoute] int id)
+        public IActionResult UpdateStudent(UpdateStudentDTO updateStudentDto, [FromRoute] string id)
         {
-            return Ok($"Aktualizacja dokończona o id {id}");
+            var student = 
+                _studentsDbContext.Student.FirstOrDefault(x => x.IndexNumber == id);
+            if (student == null)
+            {
+                return NotFound($"Nie znaleziono studenta o id {id}");
+            }
+
+            student.FirstName = updateStudentDto.FirstName;
+            student.LastName = updateStudentDto.LastName;
+            student.BirthDate = updateStudentDto.BirthDate;
+
+            _studentsDbContext.SaveChanges();
+
+            return Ok(student);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteStudent([FromRoute] int id)
+        public IActionResult DeleteStudent([FromRoute] string id)
         {
-           
-            return Ok($"Usuwanie ukończone studenta o id {id}");
+            var student =
+                _studentsDbContext.Student.FirstOrDefault(x => x.IndexNumber == id);
+            if (student == null)
+            {
+                return NotFound($"Nie znaleziono studenta o id {id}");
+            }
+
+            _studentsDbContext.Student.Remove(student);
+
+            _studentsDbContext.SaveChanges();
+
+            return Ok();
         }
     }
 }

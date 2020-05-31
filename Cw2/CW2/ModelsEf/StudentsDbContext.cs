@@ -1,9 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace CW2.ModelsEf
 {
     public class StudentsDbContext : DbContext
     {
+        public static readonly ILoggerFactory MyLoggerFactory
+            = LoggerFactory.Create(builder => { builder.AddConsole(); });
+
         public StudentsDbContext()
         {
         }
@@ -17,7 +21,13 @@ namespace CW2.ModelsEf
         public virtual DbSet<RefreshToken> RefreshToken { get; set; }
         public virtual DbSet<Student> Student { get; set; }
         public virtual DbSet<Studies> Studies { get; set; }
-        
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLoggerFactory(MyLoggerFactory);
+            base.OnConfiguring(optionsBuilder);
+        }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Enrollment>(entity =>
