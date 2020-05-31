@@ -11,6 +11,21 @@ namespace Pharmacy.Models
         public static readonly ILoggerFactory MyLoggerFactory
             = LoggerFactory.Create(builder => { builder.AddConsole(); });
 
+        public PharmacyDbContext()
+        {
+        }
+
+        public PharmacyDbContext(DbContextOptions<PharmacyDbContext> options)
+            : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<PrescriptionMedicament>()
+                .HasKey(x => new {x.IdMedicament, x.IdPrescription});
+        }
+
         public virtual DbSet<Doctor> Doctors { get; set; }
         public virtual DbSet<Patient> Patients { get; set; }
         public virtual DbSet<Prescription> Prescriptions { get; set; }
