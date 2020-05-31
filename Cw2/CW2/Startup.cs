@@ -3,9 +3,11 @@ using System.Net;
 using System.Text;
 using CW2.DAL;
 using CW2.Middlewares;
+using CW2.ModelsEf;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,6 +27,8 @@ namespace CW2
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddDbContext<StudentsDbContext>(options =>
+                options.UseSqlServer(Configuration.GetConnectionString("StudentsDb")));
             services.AddSingleton<IDbService, SqlDbService>();
             services.AddControllers();
 
