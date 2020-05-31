@@ -4,7 +4,6 @@ using CW2.DAL;
 using CW2.Models;
 using CW2.ModelsEf;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Student = CW2.Models.Student;
 
 namespace CW2.Controllers
